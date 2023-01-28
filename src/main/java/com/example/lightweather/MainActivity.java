@@ -8,6 +8,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
@@ -15,6 +16,14 @@ import com.baidu.location.LocationClientOption;
 import com.example.lightweather.databinding.ActivityMainBinding;
 import com.example.location.Location;
 import com.example.location.LocationListener;
+
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements Location {
 
@@ -85,19 +94,42 @@ public class MainActivity extends AppCompatActivity implements Location {
         float radius = bdLocation.getRadius();    //获取定位精度
         String coorType = bdLocation.getCoorType();//获取经纬度坐标类型
         int errorCode = bdLocation.getLocType();//161  表示网络定位结果
-        String addr = bdLocation.getAddrStr();    //获取详细地址信息
+        String address = bdLocation.getAddrStr();    //获取详细地址信息
         String country = bdLocation.getCountry();    //获取国家
         String province = bdLocation.getProvince();    //获取省份
         String city = bdLocation.getCity();    //获取城市
         String district = bdLocation.getDistrict();    //获取区县
         String street = bdLocation.getStreet();    //获取街道信息
         String locationDescribe = bdLocation.getLocationDescribe();    //获取位置描述信息
-        binding.tvGetAddress.setText(addr);//设置文本显示
+        binding.tvGetAddress.setText(address);//设置文本显示
+
+        searchCity(district);
     }
 
     public void startGPS(){
         if(mLocationClient != null){
             mLocationClient.start();
         }
+    }
+
+    private  void  searchCity(String district) {
+        //Okhttp
+        OkHttpClient client =new OkHttpClient();
+        Request request = new Request.Builder().url("https://geoapi.qweather.com/v2/city/lookup?key=c6ff6299132c4528917941b35cf34e90&location="+district).build();
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if(response.isSuccessful()){
+                    Log.d("a","成功获取数据");
+                    Log.d("a","response.code()=="+response.code());
+                    Log.d("a","response.body().string=="+response.code());
+                }
+            }
+        });
     }
 }
